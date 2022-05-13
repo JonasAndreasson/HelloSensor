@@ -9,8 +9,11 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.Image;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -18,7 +21,10 @@ import org.w3c.dom.Text;
 public class DisplayAccelerometerActivity extends AppCompatActivity implements SensorEventListener {
     private SensorManager SensorManage;
     TextView valueTV, directionTV;
-
+    ImageView arrowIV;
+    String direction;
+    final int LEFT = 20;
+    final int RIGHT = -LEFT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +32,13 @@ public class DisplayAccelerometerActivity extends AppCompatActivity implements S
         setContentView(R.layout.activity_display_accelerometer);
         valueTV = (TextView) findViewById(R.id.valueTV);
         directionTV = (TextView) findViewById(R.id.directionTV);
+        directionTV.setTextColor(Color.BLACK);
+        arrowIV = (ImageView) findViewById(R.id.arrow);
         SensorManage = (SensorManager) getSystemService(SENSOR_SERVICE);
+        View someView = findViewById(R.id.screen);
+        View root = someView.getRootView();
+        root.setBackgroundColor(ContextCompat.getColor(this, android.R.color.white));
+//      direction = "Höger";
     }
 
     @Override
@@ -34,23 +46,28 @@ public class DisplayAccelerometerActivity extends AppCompatActivity implements S
             float x = event.values[0];
             float y = event.values[1];
             float z = event.values[2];
-            valueTV.setTextColor(Color.BLACK);
-            valueTV.setText("Accelerometer values: \n"+
-                    "x: "+ Math.round(x)+"\n" +
-                    "y: " + Math.round(y)+"\n" +
-                    "z: "+ Math.round(z)
-            );
-        View someView = findViewById(R.id.screen);
-        View root = someView.getRootView();
-        root.setBackgroundColor(ContextCompat.getColor(this, android.R.color.white));
-//        if(x>8) root.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_purple));
-//        else if(z>8) root.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_blue_bright));
-//        else if(y>8) root.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_green_light));
-//        else root.setBackgroundColor(ContextCompat.getColor(this, android.R.color.black));
-        directionTV.setTextColor(Color.BLACK);
-        if(x>=5) directionTV.setText("Vänster");
-        if(-5>x) directionTV.setText("Höger");
-        if(-5<x&&x<5) directionTV.setText("");
+
+
+        if (arrowIV.getRotation()%360 == 0){
+            direction = "Höger";
+        } else if (arrowIV.getRotation()%360 == 180){
+            direction = "Vänster";
+        }
+        directionTV.setText(direction);
+        if(x>=LEFT && direction.equals("Vänster")){
+            flipArrow();
+            Log.v("Output", "x: "+ x
+                    + "\ny: " +y + "\nz: "+ z);
+        }
+        if(RIGHT>=x && direction.equals("Höger")){
+            arrowIV.setRotation(arrowIV.getRotation()+180);
+            Log.v("Output", "x: "+ x
+                    + "\ny: " +y + "\nz: "+ z);
+        }
+
+    }
+    private void flipArrow(){
+        arrowIV.setRotation(arrowIV.getRotation()+180);
     }
 
     @Override
